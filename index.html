@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>express-get-post</title>
+  <style>
+  </style>
+</head>
+<body>
+  <script>
+    function serialize (data) {
+      if (!data) {
+        return '';
+      }
+      
+      var paris = [];
+      for (var key in data) {
+        if (!data.hasOwnProperty(key) || typeof data[key] === 'function') {
+          continue;
+        }
+        var name = encodeURIComponent(key);
+        var value = encodeURIComponent(data[key].toString());
+        paris.push(name + '=' + value);
+      }
+      return paris.join('&');
+    }
+
+    function request (method, url, options, callback) {
+      var req;
+      if (window.XMLHttpRequest) {
+        req = new XMLHttpRequest();
+      } else if (window.ActiveXObject) { // 兼容IE7及以下版本
+        req = new ActiveXObject();
+      }
+      
+      req.onreadystatechange = function () {
+        if (req.readyState === 4) {
+          if (req.status === 200) {
+            console.log('请求成功');
+            callback(req.response);
+          }
+        } else {
+          console.log('请求中...');
+        }
+      }
+      
+      url = method === 'get' && serialize(options) !== '' ?  url + '?' + serialize(options) : url;
+      let sendParams = method === 'get' ? null : serialize(options);
+      
+      req.open(method, url);
+      req.setRequestHeader("Content-Type","application/x-www-form-urlencoded"); 
+      req.send(sendParams);
+    }
+
+    // 获取用户信息
+    // request('get', 'http://localhost:3000/getUserInfo', {userId: 4}, (res) => {
+    //   console.log(res);
+    // });
+
+    // 增加用户
+    // request('post', 'http://localhost:3000/addUser', {userName: 'liming', age: '23', address: '浙江绍兴'}, (res) => {
+    //   console.log(res);
+    // });
+
+    function jsonp (url, callbackFun) {
+      let script = document.createElement('script');
+      let head = document.getElementsByTagName('head')[0];
+      script.url = url + '?callback=' + callbackFun;
+      head.appendChild(script);
+    }
+
+    function getUserInfo (data) {
+      console.log(data);
+    }
+
+    jsonp('http://localhost:3000/getUserInfo', 'getUserInfo');
+   </script>
+</body>
+</html>
